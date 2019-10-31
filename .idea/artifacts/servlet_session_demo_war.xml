@@ -1,0 +1,14 @@
+<component name="ArtifactManager">
+  <artifact type="war" name="servlet_session_demo:war">
+    <output-path>$PROJECT_DIR$/../../ServletProjects/servlet_session_demo/target</output-path>
+    <properties id="maven-jee-properties">
+      <options>
+        <module>servlet_session_demo</module>
+        <packaging>war</packaging>
+      </options>
+    </properties>
+    <root id="archive" name="servlet_cookie_demo.war">
+      <element id="artifact" artifact-name="servlet_session_demo:war exploded" />
+    </root>
+  </artifact>
+</component>

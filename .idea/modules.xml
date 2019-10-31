@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/MyBatisProjects.iml" filepath="$PROJECT_DIR$/MyBatisProjects.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../../ServletProjects/servlet_cookie_demo/servlet_cookie_demo.iml" filepath="$PROJECT_DIR$/../../ServletProjects/servlet_cookie_demo/servlet_cookie_demo.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../../ServletProjects/servlet_session_demo/servlet_session_demo.iml" filepath="$PROJECT_DIR$/../../ServletProjects/servlet_session_demo/servlet_session_demo.iml" />
+    </modules>
+  </component>
+</project>

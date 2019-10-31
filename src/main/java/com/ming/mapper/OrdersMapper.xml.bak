@@ -1,0 +1,207 @@
+<?xml version="1.0"  encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+
+<mapper namespace="com.ming.mapper.OrdersMapper">
+
+
+    <!--使用resultType-->
+	<select id="findOrderUser" resultType="com.ming.po.OrderCustom">
+        select
+			orders.*,
+			user.username,
+			user.sex,
+			user.address
+		from
+			orders,
+    		user
+		where
+			orders.user_id = user.id;
+    </select>
+
+    <!--*************************************************************************-->
+    <!--测试1:1-->
+    <!--定义ResultMap-->
+    <resultMap id="myResultMap" type="com.ming.po.Orders">
+        <!--配置基本信息-->
+        <id column="id" property="id"/>
+        <result column="user_id" property="userid"/>
+        <result column="number" property="number"/>
+        <result column="createtime" property="createtime"/>
+        <result column="note" property="note"/>
+        <!--配置关联信息 1:1
+            property: 将关联信息映射到Orders对象中的哪个属性
+            javaType: 该属性(上面提到的)是哪个类型
+        -->
+        <association property="user" javaType="com.ming.po.User">
+            <!--
+                在关联表中唯一标识用户信息的字段
+            -->
+            <id column="user_id" property="id"/>
+            <result column="username" property="username"/>
+            <result column="sex" property="sex"/>
+            <result column="address" property="address"/>
+        </association>
+    </resultMap>
+    <!--使用ResultMap-->
+    <select id="findOrderUser2" resultMap="myResultMap">
+        select
+			orders.*,
+			user.username,
+			user.sex,
+			user.address
+		from
+			orders,
+    		user
+		where
+			orders.user_id = user.id;
+    </select>
+
+
+    <!--***********************************************************************************-->
+    <!--测试1:m-->
+    <resultMap id="orderAndOrderDetailRM" type="com.ming.po.Orders">
+        <!--订单信息-->
+        <id column="id" property="id"/>
+        <result column="user_id" property="userid"/>
+        <result column="number" property="number"/>
+        <result column="createtime" property="createtime"/>
+        <result column="note" property="note"/>
+        <!--用户信息 1:1 一个订单属于一个用户  association-->
+        <association property="user" javaType="com.ming.po.User">
+            <id column="user_id" property="id"/>
+            <result column="username" property="username"/>
+            <result column="sex" property="sex"/>
+            <result column="address" property="address"/>
+        </association>
+        <!--
+            订单明细信息 1:m 一个订单对应多个订单明细 collection
+            ofType : 表示映射到的集合中的POJO的属性类型  例如: List<User> 则
+            POJO对应的类型是com.ming.po.User类型
+          -->
+        <collection property="orderdetails" ofType="com.ming.po.Orderdetail">
+            <id column="orderdetail_id" property="id"/>
+            <result column="items_id" property="itemsId"/>
+            <result column="items_num" property="itemsNum"/>
+            <result column="orders_id" property="ordersId"/>
+        </collection>
+    </resultMap>
+    <!--1:m-->
+    <select id="findOrderAndOrderDetail" resultMap="orderAndOrderDetailRM">
+        select
+            orders.*,
+            user.username,
+            user.sex,
+            user.address,
+            orderdetail.id as orderdetail_id,
+            orderdetail.items_id,
+            orderdetail.items_num,
+            orderdetail.orders_id
+        from
+            orders,
+            user,
+            orderdetail
+        where
+            orders.user_id = user.id and orderdetail.orders_id = orders.id;
+    </select>
+
+    <!--***********************************************************************************-->
+    <!--测试m:n-->
+    <resultMap id="mnfindUserItems" type="com.ming.po.User">
+        <!--(1)用户信息-->
+        <id column="user_id" property="id"/>
+        <result column="username" property="username"/>
+        <result column="sex" property="sex"/>
+        <result column="address" property="address"/>
+
+        <!--(2)订单信息-->
+        <!--用户的订单信息 1:m 一个用户多个订单 collection-->
+        <!--ofType: List集合中放置的对象类型-->
+        <collection property="ordersList" ofType="com.ming.po.Orders">
+            <id column="id" property="id"/>
+            <result column="user_id" property="userid"/>
+            <result column="number" property="number"/>
+            <result column="createtime" property="createtime"/>
+            <result column="note" property="note"/>
+
+            <!--(3)订单明细-->
+            <!--一个订单含多个订单明细 1:m-->
+            <collection property="orderdetails" ofType="com.ming.po.Orderdetail">
+                <id column="orderdetail_id" property="id"/>
+                <result column="items_id" property="itemsId"/>
+                <result column="items_num" property="itemsNum"/>
+                <result column="orders_id" property="ordersId"/>
+
+                <!--(4)商品信息->
+                <!-一个订单明细对应一个商品 1: 1-->
+                <association property="items" javaType="com.ming.po.Items">
+                    <id column="items_id" property="id"/>
+                    <result column="items_name" property="name"/>
+                    <result column="items_detail" property="detail"/>
+                    <result column="items_price" property="price"/>
+                </association>
+            </collection>
+        </collection>
+    </resultMap>
+
+    <!--m:n-->
+    <select id="findUserItems" resultMap="mnfindUserItems">
+            select
+                orders.*,
+                user.username,
+                user.sex,
+                user.address,
+                orderdetail.id as orderdetail_id,
+                orderdetail.items_id,
+                orderdetail.items_num,
+                orderdetail.orders_id,
+                items.name as items_name,
+                items.detail as items_detail,
+                items.price as items_price
+            from
+                orders,
+                user,
+                orderdetail,
+                items
+            where
+                orders.user_id = user.id and orderdetail.orders_id = orders.id
+                and orderdetail.items_id = items.id
+    </select>
+
+
+    <!--实现延迟加载-->
+    <resultMap id="orderuserlazyRM" type="com.ming.po.Orders">
+        <!--配置订单信息-->
+        <id column="id" property="id"/>
+        <result column="user_id" property="userid"/>
+        <result column="number" property="number"/>
+        <result column="createtime" property="createtime"/>
+        <result column="note" property="note"/>
+        <!--延迟加载用户信息-->
+            <!--select:指定延迟加载需要执行的statement的ID(根据user_id查询用户信息的statement)
+                   该语句来自于UserMapper.xml文件中的findUserById
+
+            column: 订单信息中关联用户信息的列名
+            关联SQL如下：
+            select orders.*,
+                (select username from user where orders.user_id = user.id) as MyUserNanme,
+                (select sex from user where orders.user_id = user.id) as MySex
+                from orders;
+               -->
+        <association property="user" javaType="com.ming.po.User"
+                     select="com.ming.mapper.UserMapper.findUserById" column="user_id">
+
+        </association>
+
+
+    </resultMap>
+
+    <!--实现延迟加载-->
+    <select id="findorderuserlazyload" resultMap="orderuserlazyRM">
+        select * from orders;
+    </select>
+
+
+</mapper>
